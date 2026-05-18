@@ -1,6 +1,50 @@
+import re
+import json
 from pathlib import Path
 import fnmatch
 from collections import defaultdict
+
+# 脚本所在目录
+SCRIPT_DIR = Path(__file__).parent
+
+
+def natural_sort_key(s):
+    """自然排序算法的 Key 函数 (例如使 file2 排在 file10 前面)"""
+    return [int(text) if text.isdigit() else text.lower()
+            for text in re.split('([0-9]+)', str(s))]
+
+
+def load_config() -> dict:
+    """从脚本目录加载默认配置"""
+    config = {
+        "global_ignore": [],
+        "icons": {
+            "folder": "📁",
+            "file": "📄",
+            "ext": {}
+        }
+    }
+
+    config_path = SCRIPT_DIR / ".surge-url.json"
+    if config_path.is_file():
+        try:
+            data = json.loads(config_path.read_text(encoding="utf-8-sig"))
+            if "global_ignore" in data:
+                config["global_ignore"] = data["global_ignore"]
+            if "icons" in data:
+                config["icons"].update(data["icons"])
+        except Exception as e:
+            print(f"警告: 加载配置文件失败: {e}")
+
+    return config
+
+
+def get_icon(path: Path, icons_config: dict, is_folder=False) -> str:
+    """根据路径获取对应的图标"""
+    if is_folder:
+        return icons_config.get("folder", "📁")
+    ext = path.suffix.lower()
+    return icons_config.get("ext", {}).get(ext, icons_config.get("file", "📄"))
 
 
 def read_cname(base_path: Path) -> str:
@@ -36,7 +80,11 @@ def read_ignore_patterns(base_path: Path) -> list[str]:
     return patterns
 
 
-def should_ignore(rel_posix: str, name: str, patterns: list[str]) -> bool:
+def should_ignore(rel_posix: str, name: str, patterns: list[str], global_ignore: list) -> bool:
+    # 检查全局忽略名单
+    if name in global_ignore:
+        return True
+
     for p in patterns:
         p_norm = p.replace("\\", "/").rstrip("/")
         if not p_norm:
@@ -58,27 +106,23 @@ def should_ignore(rel_posix: str, name: str, patterns: list[str]) -> bool:
     return False
 
 
-def collect_files(base_path: Path, patterns: list[str]) -> list[Path]:
+def collect_files(base_path: Path, patterns: list[str], global_ignore: list) -> list[Path]:
     files: list[Path] = []
 
     for path in base_path.rglob("*"):
         rel = path.relative_to(base_path)
         rel_posix = rel.as_posix()
 
-        # Always ignore surge config files and CNAME in output list.
-        if rel_posix in (".surgeignore", "CNAME"):
-            continue
-
-        if should_ignore(rel_posix, path.name, patterns):
+        if should_ignore(rel_posix, path.name, patterns, global_ignore):
             continue
 
         if path.is_file():
             files.append(rel)
 
-    return sorted(files, key=lambda p: p.as_posix().lower())
+    return sorted(files, key=lambda p: natural_sort_key(p.as_posix()))
 
 
-def build_markdown(base_path: Path, domain: str, files: list[Path]) -> str:
+def build_markdown(base_path: Path, domain: str, files: list[Path], icons_config: dict) -> str:
     lines = [f"# 🚀 {base_path.name}", ""]
     grouped: dict[str, list[Path]] = defaultdict(list)
 
@@ -88,17 +132,20 @@ def build_markdown(base_path: Path, domain: str, files: list[Path]) -> str:
         grouped[group].append(rel)
 
     group_names = ["Root"] if "Root" in grouped else []
-    group_names.extend(sorted((g for g in grouped.keys() if g != "Root"), key=str.lower))
+    others = sorted((g for g in grouped.keys() if g != "Root"), key=natural_sort_key)
+    group_names.extend(others)
 
     for group in group_names:
-        lines.append(f"- 📁 {group}")
+        folder_icon = get_icon(Path(group), icons_config, is_folder=True)
+        lines.append(f"- {folder_icon} {group}")
         lines.append("")
 
-        group_files = sorted(grouped[group], key=lambda p: p.name.lower())
+        group_files = sorted(grouped[group], key=lambda p: natural_sort_key(p.name))
         for rel in group_files:
             rel_posix = rel.as_posix()
             url = f"{domain.rstrip('/')}/{rel_posix}"
-            lines.append(f"  - 📄 {rel.name}")
+            file_icon = get_icon(rel, icons_config)
+            lines.append(f"  - {file_icon} {rel.name}")
             lines.append("")
             lines.append("    ```text")
             lines.append(f"    {url}")
@@ -135,10 +182,11 @@ def main() -> None:
         print(str(exc))
         return
 
+    config = load_config()
     ignore_patterns = read_ignore_patterns(base_path)
-    files = collect_files(base_path, ignore_patterns)
+    files = collect_files(base_path, ignore_patterns, config["global_ignore"])
 
-    markdown = build_markdown(base_path, domain, files)
+    markdown = build_markdown(base_path, domain, files, config["icons"])
     out_file = write_links_file(base_path, markdown)
 
     print(f"已生成: {out_file}")

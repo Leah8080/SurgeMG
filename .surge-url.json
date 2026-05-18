@@ -1,0 +1,19 @@
+{
+  "global_ignore": [
+    ".DS_Store", "Thumbs.db", ".git", ".idea", ".vscode", "__pycache__",
+    ".surgeignore", "CNAME", ".surge-url.json"
+  ],
+  "icons": {
+    "folder": "📁",
+    "file": "📄",
+    "ext": {
+      ".md": "📝", ".html": "🌐", ".pdf": "📕", ".txt": "📄", ".log": "📄", 
+      ".jpg": "🖼️", ".jpeg": "🖼️", ".png": "🖼️", ".gif": "🖼️", ".svg": "🖼️", 
+      ".mp4": "🎥", ".mp3": "🎼", ".zip": "📦", ".rar": "📦",
+      ".exe": "🧮", ".py": "🐍", ".js": "🟨", ".ts": "🟦", ".go": "🐹", 
+      ".rs": "🦀", ".c": "🛠️", ".cpp": "🛠️", ".java": "☕", ".php": "🐘", 
+      ".rb": "💎",".sh": "📜", ".bat": "🔳", ".sql": "🗄️", ".lua": "🌙",
+      ".yaml": "⚙️", ".json": "⚙️", ".toml": "⚙️"
+    }
+  }
+}
