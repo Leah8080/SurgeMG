@@ -65,8 +65,8 @@ def collect_files(base_path: Path, patterns: list[str]) -> list[Path]:
         rel = path.relative_to(base_path)
         rel_posix = rel.as_posix()
 
-        # Always ignore surge config files in output list.
-        if rel_posix == ".surgeignore":
+        # Always ignore surge config files and CNAME in output list.
+        if rel_posix in (".surgeignore", "CNAME"):
             continue
 
         if should_ignore(rel_posix, path.name, patterns):
