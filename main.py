@@ -79,7 +79,7 @@ def collect_files(base_path: Path, patterns: list[str]) -> list[Path]:
 
 
 def build_markdown(base_path: Path, domain: str, files: list[Path]) -> str:
-    lines = [f"# {base_path.name}", ""]
+    lines = [f"# 🚀 {base_path.name}", ""]
     grouped: dict[str, list[Path]] = defaultdict(list)
 
     for rel in files:
@@ -91,14 +91,14 @@ def build_markdown(base_path: Path, domain: str, files: list[Path]) -> str:
     group_names.extend(sorted((g for g in grouped.keys() if g != "Root"), key=str.lower))
 
     for group in group_names:
-        lines.append(f"- {group}")
+        lines.append(f"- 📁 {group}")
         lines.append("")
 
         group_files = sorted(grouped[group], key=lambda p: p.name.lower())
         for rel in group_files:
             rel_posix = rel.as_posix()
             url = f"{domain.rstrip('/')}/{rel_posix}"
-            lines.append(f"  - {rel.name}")
+            lines.append(f"  - 📄 {rel.name}")
             lines.append("")
             lines.append("    ```text")
             lines.append(f"    {url}")
