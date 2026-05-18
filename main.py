@@ -1,5 +1,6 @@
 from pathlib import Path
 import fnmatch
+from collections import defaultdict
 
 
 def read_cname(base_path: Path) -> str:
@@ -7,7 +8,7 @@ def read_cname(base_path: Path) -> str:
     if not cname_file.is_file():
         raise FileNotFoundError(f"未找到 CNAME 文件: {cname_file}")
 
-    raw = cname_file.read_text(encoding="utf-8").strip()
+    raw = cname_file.read_text(encoding="utf-8").strip().lstrip("\ufeff")
     if not raw:
         raise ValueError("CNAME 文件为空")
 
@@ -64,6 +65,10 @@ def collect_files(base_path: Path, patterns: list[str]) -> list[Path]:
         rel = path.relative_to(base_path)
         rel_posix = rel.as_posix()
 
+        # Always ignore surge config files in output list.
+        if rel_posix == ".surgeignore":
+            continue
+
         if should_ignore(rel_posix, path.name, patterns):
             continue
 
@@ -74,12 +79,31 @@ def collect_files(base_path: Path, patterns: list[str]) -> list[Path]:
 
 
 def build_markdown(base_path: Path, domain: str, files: list[Path]) -> str:
-    lines = [f"# Links for {base_path.name}", ""]
+    lines = [f"# {base_path.name}", ""]
+    grouped: dict[str, list[Path]] = defaultdict(list)
 
     for rel in files:
-        rel_posix = rel.as_posix()
-        url = f"{domain.rstrip('/')}/{rel_posix}"
-        lines.append(f"- [{rel_posix}]({url})")
+        parent = rel.parent.as_posix()
+        group = "Root" if parent == "." else parent
+        grouped[group].append(rel)
+
+    group_names = ["Root"] if "Root" in grouped else []
+    group_names.extend(sorted((g for g in grouped.keys() if g != "Root"), key=str.lower))
+
+    for group in group_names:
+        lines.append(f"- {group}")
+        lines.append("")
+
+        group_files = sorted(grouped[group], key=lambda p: p.name.lower())
+        for rel in group_files:
+            rel_posix = rel.as_posix()
+            url = f"{domain.rstrip('/')}/{rel_posix}"
+            lines.append(f"  - {rel.name}")
+            lines.append("")
+            lines.append("    ```text")
+            lines.append(f"    {url}")
+            lines.append("    ```")
+            lines.append("")
 
     lines.append("")
     return "\n".join(lines)
@@ -123,3 +147,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
