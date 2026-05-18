@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+.venv
+.python-version
+uv.lock
+
+# Wrangler
+node_modules/
+package-lock.json
+package.json
+.wrangler
+.dev.vars
+
+# ignore
+.env
+log
+.aider.*
+.workbuddy
+
+# user
+x/
+*.bat
+*.txt
+
+links/
