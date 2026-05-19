@@ -50,7 +50,7 @@ def get_icon(path: Path, icons_config: dict, is_folder=False) -> str:
 def read_cname(base_path: Path) -> str:
     cname_file = base_path / "CNAME"
     if not cname_file.is_file():
-        raise FileNotFoundError(f"未找到 CNAME 文件: {cname_file}")
+        raise FileNotFoundError(f"\n未找到 CNAME 文件：{cname_file}\n退出脚本...")
 
     raw = cname_file.read_text(encoding="utf-8").strip().lstrip("\ufeff")
     if not raw:
@@ -62,7 +62,7 @@ def read_cname(base_path: Path) -> str:
     if raw.startswith("https://") or raw.startswith("http://"):
         return raw
 
-    return f"http://{raw}"
+    return f"https://{raw}"
 
 
 def read_ignore_patterns(base_path: Path) -> list[str]:
@@ -106,20 +106,26 @@ def should_ignore(rel_posix: str, name: str, patterns: list[str], global_ignore:
     return False
 
 
-def collect_files(base_path: Path, patterns: list[str], global_ignore: list) -> list[Path]:
+def collect_files(base_path: Path, patterns: list[str], global_ignore: list) -> tuple[list[Path], int, int]:
     files: list[Path] = []
+    total_count = 0
+    filtered_count = 0
 
     for path in base_path.rglob("*"):
+        if not path.is_file():
+            continue
+
+        total_count += 1
         rel = path.relative_to(base_path)
         rel_posix = rel.as_posix()
 
         if should_ignore(rel_posix, path.name, patterns, global_ignore):
+            filtered_count += 1
             continue
 
-        if path.is_file():
-            files.append(rel)
+        files.append(rel)
 
-    return sorted(files, key=lambda p: natural_sort_key(p.as_posix()))
+    return sorted(files, key=lambda p: natural_sort_key(p.as_posix())), total_count, filtered_count
 
 
 def build_markdown(base_path: Path, domain: str, files: list[Path], icons_config: dict) -> str:
@@ -166,7 +172,7 @@ def write_links_file(base_path: Path, content: str) -> Path:
 
 
 def main() -> None:
-    user_input = input("请输入要扫描的路径: ").strip().strip('"')
+    user_input = input("请输入surge项目路径: ").strip().strip('"')
     if not user_input:
         print("路径不能为空")
         return
@@ -184,13 +190,14 @@ def main() -> None:
 
     config = load_config()
     ignore_patterns = read_ignore_patterns(base_path)
-    files = collect_files(base_path, ignore_patterns, config["global_ignore"])
+    files, total_count, filtered_count = collect_files(base_path, ignore_patterns, config["global_ignore"])
 
     markdown = build_markdown(base_path, domain, files, config["icons"])
     out_file = write_links_file(base_path, markdown)
 
-    print(f"已生成: {out_file}")
-    print(f"共写入 {len(files)} 个链接")
+    print(f"\n项目域名: {domain}")
+    print(f"总文件数: {total_count} | 生成链接: {len(files)} | 过滤数量: {filtered_count}")
+    print(f"输出文件: {out_file}")
 
 
 if __name__ == "__main__":
