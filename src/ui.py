@@ -86,6 +86,53 @@ def run_surge_list():
         except Exception as e:
             console.print(f"[bold red]错误: {e}[/bold red]")
 
+def run_deploy(path, domain_url):
+    with console.status(f"[bold green]🚀 正在部署到 {domain_url}...", spinner="bouncingBar"):
+        try:
+            process = subprocess.Popen(f"surge {path} --domain {domain_url}", 
+                                     shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, 
+                                     text=True, encoding="utf-8")
+            
+            stats = {}
+            for line in process.stdout:
+                clean_line = strip_ansi(line).strip()
+                if not clean_line:
+                    continue
+                
+                # 静默捕获关键统计信息
+                if "project:" in clean_line.lower():
+                    stats['project'] = clean_line.split("project:")[1].strip()
+                if "domain:" in clean_line.lower():
+                    stats['domain'] = clean_line.split("domain:")[1].strip()
+                if "size:" in clean_line.lower():
+                    stats['size'] = clean_line.split("size:")[1].strip()
+                
+                # 只在控制台输出极简进度或最终成功信息
+                if "success!" in clean_line.lower():
+                    console.print(f"\n[bold green]✓ {clean_line}[/bold green]")
+                
+            process.wait()
+            
+            if process.returncode == 0:
+                # 部署成功后显示一个极其精美的总结面板
+                summary_table = Table(show_header=False, box=None, padding=(0, 2))
+                summary_table.add_row("📁 [bold]项目路径[/bold]", f"[dim]{stats.get('project', path)}[/dim]")
+                summary_table.add_row("📦 [bold]文件大小[/bold]", f"[yellow]{stats.get('size', '未知')}[/yellow]")
+                summary_table.add_row("🔗 [bold]预览地址[/bold]", f"[bold underline link={domain_url} cyan]{domain_url}[/bold underline link={domain_url} cyan]")
+                
+                console.print(Panel(
+                    summary_table, 
+                    title="[bold green]🎊 部署成功[/bold green]", 
+                    border_style="green", 
+                    expand=False,
+                    padding=(1, 2)
+                ))
+            else:
+                console.print(f"\n[bold red]✗ 部署失败 (退出码: {process.returncode})[/bold red]")
+                
+        except Exception as e:
+            console.print(f"[bold red]错误: {e}[/bold red]")
+
 def show_menu():
     while True:
         console.clear()
@@ -120,7 +167,7 @@ def show_menu():
             prefix = Prompt.ask("请输入要使用的域名前缀 (例如: test)")
             if path and prefix:
                 domain = f"https://{prefix}.surge.sh"
-                run_command(f"surge {path} --domain {domain}", f"正在部署项目到 {domain}")
+                run_deploy(path, domain)
             Prompt.ask("\n按回车键继续")
         elif choice == "3":
             project = Prompt.ask("请输入要删除的项目域名 (例如 example.surge.sh)")
