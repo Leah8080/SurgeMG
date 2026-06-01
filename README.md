@@ -17,6 +17,8 @@
 ```text
 surge/
 ├── main.py            # 程序启动入口
+├── .env               # 环境变量配置文件 (可选)
+├── .env.example       # 环境变量配置示例
 ├── src/               # 源码目录
 │   ├── ui.py          # 交互逻辑与菜单显示
 │   └── logic.py       # 核心业务逻辑（链接生成等）
@@ -24,6 +26,16 @@ surge/
 ├── pyproject.toml     # 项目依赖配置文件 (uv)
 └── .surge-url.json    # 图标及忽略规则配置文件
 ```
+
+## ⚙️ 环境变量配置 (.env)
+
+为了方便在不同电脑上操作，你可以创建一个 `.env` 文件（参考 `.env.example`）来配置以下内容：
+
+- **Surge 认证**：
+  - `SURGE_LOGIN`: 你的 Surge 账号邮箱。
+  - `SURGE_TOKEN`: 你的 Surge Token（登录后可通过 `surge token` 命令获取）。
+
+*注意：工具本身的图标及忽略规则配置仍通过 `.surge-url.json` 进行管理。*
 
 ## 🚀 快速开始
 

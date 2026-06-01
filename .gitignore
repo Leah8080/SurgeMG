@@ -18,10 +18,12 @@ package.json
 
 # ignore
 .gitignore
-.env
+.env*
+!.env.example
 log
 .aider.*
 .workbuddy
+.antigravitycli
 
 # user
 x/
