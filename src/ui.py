@@ -120,7 +120,8 @@ def run_deploy(path, domain_url):
                 summary_table = Table(show_header=False, box=None, padding=(0, 1))
                 summary_table.add_row("📁 [bold]项目路径[/bold]", f"[dim]{stats.get('project', path)}[/dim]")
                 summary_table.add_row("📦 [bold]文件大小[/bold]", f"[yellow]{stats.get('size', '未知')}[/yellow]")
-                summary_table.add_row("🔗 [bold]项目地址[/bold]", f"[bold link={domain_url} cyan]{domain_url}[/bold link={domain_url} cyan]")
+                # summary_table.add_row("🔗 [bold]项目地址[/bold]", f"[bold link={domain_url} cyan]{domain_url}[/bold link={domain_url} cyan]")
+                summary_table.add_row("🔗 [bold]项目地址[/bold]", f"[bold cyan]{domain_url}[/bold cyan]")
                 
                 console.print(Panel(
                     summary_table, 
