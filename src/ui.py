@@ -174,11 +174,11 @@ def show_menu():
         menu_table.add_column("Index", style="green")
         menu_table.add_column("Option")
         
-        menu_table.add_row("1.", "查看项目 (surge list)")
-        menu_table.add_row("2.", "部署项目 (surge deploy)")
-        menu_table.add_row("3.", "删除项目 (surge teardown)")
-        menu_table.add_row("4.", "生成链接 (markdown)")
-        menu_table.add_row("5.", "工具管理 (npm global)")
+        menu_table.add_row("1.", "查看项目 [dim](surge list)[/dim]")
+        menu_table.add_row("2.", "部署项目 [dim](surge deploy)[/dim]")
+        menu_table.add_row("3.", "删除项目 [dim](surge teardown)[/dim]")
+        menu_table.add_row("4.", "生成链接 [dim](markdown)[/dim]")
+        menu_table.add_row("5.", "工具管理 [dim](npm global)[/dim]")
         menu_table.add_row("0.", "退出脚本")
 
         menu_panel = Panel(
@@ -293,9 +293,9 @@ def show_tool_management():
         tool_table.add_column("Index", style="green")
         tool_table.add_column("Option")
                 
-        tool_table.add_row("1.", "安装 surge (npm install -g surge)")
-        tool_table.add_row("2.", "更新 surge (npm install -g surge)")
-        tool_table.add_row("3.", "卸载 surge (npm uninstall -g surge)")
+        tool_table.add_row("1.", "安装 surge [dim](npm install -g surge)[/dim]")
+        tool_table.add_row("2.", "更新 surge [dim](npm install -g surge)[/dim]")
+        tool_table.add_row("3.", "卸载 surge [dim](npm uninstall -g surge)[/dim]")
         tool_table.add_row("0.", "返回主菜单")
 
         tool_panel = Panel(
