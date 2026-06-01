@@ -163,11 +163,29 @@ def show_menu():
             run_surge_list()
             Prompt.ask("\n按回车键继续")
         elif choice == "2":
-            path = Prompt.ask("请输入surge项目路径").strip().strip('"')
-            prefix = Prompt.ask("请输入要使用的域名前缀 (例如: test)")
-            if path and prefix:
-                domain = f"https://{prefix}.surge.sh"
-                run_deploy(path, domain)
+            path_str = Prompt.ask("请输入surge项目路径").strip().strip('"')
+            if path_str:
+                project_path = Path(path_str).expanduser().resolve()
+                if project_path.exists() and project_path.is_dir():
+                    cname_file = project_path / "CNAME"
+                    domain = ""
+                    
+                    if cname_file.is_file():
+                        # 如果存在 CNAME，读取并清理内容
+                        raw_cname = cname_file.read_text(encoding="utf-8").strip().lstrip("\ufeff")
+                        if raw_cname:
+                            domain = raw_cname if "://" in raw_cname else f"https://{raw_cname}"
+                            console.print(f"[bold green]检测到 CNAME 文件: [cyan]{raw_cname}[/cyan][/bold green]")
+                    
+                    if not domain:
+                        prefix = Prompt.ask("未检测到 CNAME，请输入要使用的域名前缀 (例如: test)")
+                        if prefix:
+                            domain = f"https://{prefix}.surge.sh"
+                    
+                    if domain:
+                        run_deploy(str(project_path), domain)
+                else:
+                    console.print(f"[bold red]错误: 路径不存在或不是目录: {path_str}[/bold red]")
             Prompt.ask("\n按回车键继续")
         elif choice == "3":
             project = Prompt.ask("请输入要删除的项目域名 (例如 example.surge.sh)")
