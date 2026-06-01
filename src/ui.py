@@ -129,11 +129,14 @@ def run_deploy(path, domain_url):
                     expand=False,
                     padding=(1, 1)
                 ))
+                return True
             else:
                 console.print(f"\n[bold red]✗ 部署失败 (退出码: {process.returncode})[/bold red]")
+                return False
                 
         except Exception as e:
             console.print(f"[bold red]错误: {e}[/bold red]")
+            return False
 
 def show_menu():
     while True:
@@ -186,6 +189,7 @@ def show_menu():
                     
                     if domain:
                         # 部署前进行二次确认
+                        cname_existed = cname_file.is_file()
                         confirm_table = Table(show_header=False, box=None, padding=(0, 1))
                         confirm_table.add_row("项目路径:", f"[cyan]{project_path}[/cyan]")
                         confirm_table.add_row("部署域名:", f"[bold green]{domain}[/bold green]")
@@ -200,7 +204,15 @@ def show_menu():
                         ))
                         
                         if Confirm.ask("\n确定要开始部署吗？", default=True):
-                            run_deploy(str(project_path), domain)
+                            if run_deploy(str(project_path), domain):
+                                # 如果之前没有 CNAME 文件，部署成功后自动创建
+                                if not cname_existed:
+                                    try:
+                                        # 写入完整的域名地址（包括协议头）
+                                        cname_file.write_text(domain, encoding="utf-8")
+                                        console.print(f"[bold green]已自动创建 CNAME 文件: [cyan]{domain}[/cyan][/bold green]")
+                                    except Exception as e:
+                                        console.print(f"[bold red]创建 CNAME 失败: {e}[/bold red]")
                         else:
                             console.print("[yellow]已取消部署。[/yellow]")
                 else:
