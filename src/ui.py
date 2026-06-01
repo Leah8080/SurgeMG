@@ -95,9 +95,10 @@ def show_menu():
         menu_table.add_column("Option")
         
         menu_table.add_row("1.", "查看项目 (surge list)")
-        menu_table.add_row("2.", "删除项目 (surge teardown)")
-        menu_table.add_row("3.", "生成链接 (Markdown)")
-        menu_table.add_row("4.", "工具管理 (Install/Update/Uninstall)")
+        menu_table.add_row("2.", "部署项目 (surge deploy)")
+        menu_table.add_row("3.", "删除项目 (surge teardown)")
+        menu_table.add_row("4.", "生成链接 (Markdown)")
+        menu_table.add_row("5.", "工具管理 (Install/Update/Uninstall)")
         menu_table.add_row("0.", "退出脚本")
 
         menu_panel = Panel(
@@ -109,17 +110,24 @@ def show_menu():
         )
         console.print(menu_panel)
         
-        choice = Prompt.ask("请选择操作", choices=["1", "2", "3", "4", "0"], default="1")
+        choice = Prompt.ask("请选择操作", choices=["1", "2", "3", "4", "5", "0"], default="1")
         
         if choice == "1":
             run_surge_list()
             Prompt.ask("\n按回车键继续")
         elif choice == "2":
+            path = Prompt.ask("请输入surge项目路径").strip().strip('"')
+            prefix = Prompt.ask("请输入要使用的域名前缀 (例如: test)")
+            if path and prefix:
+                domain = f"https://{prefix}.surge.sh"
+                run_command(f"surge {path} --domain {domain}", f"正在部署项目到 {domain}")
+            Prompt.ask("\n按回车键继续")
+        elif choice == "3":
             project = Prompt.ask("请输入要删除的项目域名 (例如 example.surge.sh)")
             if project:
                 run_command(f"surge teardown {project}", f"正在删除项目 {project}")
             Prompt.ask("\n按回车键继续")
-        elif choice == "3":
+        elif choice == "4":
             path = Prompt.ask("请输入surge项目路径").strip().strip('"')
             if path:
                 try:
@@ -133,7 +141,7 @@ def show_menu():
                 except Exception as e:
                     console.print(f"[bold red]错误: {e}[/bold red]")
             Prompt.ask("\n按回车键继续")
-        elif choice == "4":
+        elif choice == "5":
             show_tool_management()
         elif choice == "0":
             console.print("[yellow]感谢使用，再见！[/yellow]")
