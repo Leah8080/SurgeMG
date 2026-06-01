@@ -251,16 +251,26 @@ def show_menu():
                     console.print("[yellow]已取消删除。[/yellow]")
             Prompt.ask("\n按回车键继续")
         elif choice == "4":
-            path = Prompt.ask("请输入surge项目路径").strip().strip('"')
-            if path:
+            path_str = Prompt.ask("请输入surge项目路径").strip().strip('"')
+            if path_str:
                 try:
                     with console.status("[bold green]正在生成链接...", spinner="dots"):
-                        result = generate_links(path, SCRIPT_DIR)
+                        result = generate_links(path_str, SCRIPT_DIR)
                     
-                    console.print(f"\n[bold green]✓ 生成成功![/bold green]")
-                    console.print(f"项目域名: [cyan]{result['domain']}[/cyan]", highlight=False)
-                    console.print(f"总文件数: {result['total_count']} | 生成链接: {result['files_count']} | 过滤数量: {result['filtered_count']}")
-                    console.print(f"输出文件: [cyan]{result['out_file']}[/cyan]")
+                    # 生成成功后显示精美的总结面板
+                    summary_table = Table(show_header=False, box=None, padding=(0, 2))
+                    summary_table.add_row("🌐 [bold]项目域名[/bold]", f"[bold cyan]{result['domain']}[/bold cyan]")
+                    summary_table.add_row("📊 [bold]文件统计[/bold]", f"总数: [green]{result['total_count']}[/green] | 链接: [cyan]{result['files_count']}[/cyan] | 过滤: [yellow]{result['filtered_count']}[/yellow]")
+                    summary_table.add_row("📝 [bold]输出文件[/bold]", f"[dim]{result['out_file']}[/dim]")
+                    
+                    console.print("\n")
+                    console.print(Panel(
+                        summary_table, 
+                        title="[bold green]✨ 链接生成成功[/bold green]", 
+                        border_style="green", 
+                        expand=False,
+                        padding=(1, 1)
+                    ), highlight=False)
                 except Exception as e:
                     console.print(f"[bold red]错误: {e}[/bold red]")
             Prompt.ask("\n按回车键继续")
