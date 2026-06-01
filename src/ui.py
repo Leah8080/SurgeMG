@@ -1,6 +1,7 @@
 import subprocess
 import sys
 import re
+import os
 from pathlib import Path
 from rich.console import Console, Group
 from rich.panel import Panel
@@ -152,7 +153,6 @@ def run_teardown(project):
 
                 # 只显示成功移除的提示
                 if "has been removed" in clean_line.lower() or "success" in clean_line.lower():
-                    # console.print(f"\n[bold green]✓ 删除成功{clean_line}[/bold green]")
                     console.print(f"\n[bold green]✓ 成功删除：{project}[/bold green]")
 
             process.wait()
