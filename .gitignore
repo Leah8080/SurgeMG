@@ -17,6 +17,7 @@ package.json
 .dev.vars
 
 # ignore
+.gitignore
 .env
 log
 .aider.*
@@ -26,5 +27,6 @@ log
 x/
 *.bat
 *.txt
+note.md
 
 links/
