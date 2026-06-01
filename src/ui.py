@@ -60,12 +60,13 @@ def run_surge_list():
                 return
 
             table = Table(title="[bold cyan]Surge 项目列表[/bold cyan]", border_style="bright_blue", header_style="bold magenta")
+            table.add_column("#", style="dim", width=3)
             table.add_column("域名 (Domain)", style="cyan")
             table.add_column("发布时间 (Published)", style="green")
             table.add_column("服务商 (Provider)", style="dim")
             table.add_column("计划 (Plan)", style="yellow")
 
-            for line in raw_lines:
+            for i, line in enumerate(raw_lines, 1):
                 clean_line = strip_ansi(line).strip()
                 if not clean_line:
                     continue
@@ -78,9 +79,8 @@ def run_surge_list():
                     time = parts[1]
                     provider = parts[2] if len(parts) > 2 else "-"
                     plan = parts[-1] if len(parts) > 3 else "-"
-                    # 如果只有 2 个部分，plan 可能就是 parts[1] 的补充，这种情况通常不会发生
                     
-                    table.add_row(domain, time, provider, plan)
+                    table.add_row(str(i), domain, time, provider, plan)
 
             console.print(table)
         except Exception as e:
