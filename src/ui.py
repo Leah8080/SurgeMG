@@ -1,5 +1,6 @@
 import subprocess
 import sys
+import re
 from pathlib import Path
 from rich.console import Console, Group
 from rich.panel import Panel
@@ -39,6 +40,52 @@ def run_command(command, description):
         except Exception as e:
             console.print(f"[bold red]错误: {e}[/bold red]")
 
+def strip_ansi(text):
+    """移除字符串中的 ANSI 转义序列"""
+    ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+    return ansi_escape.sub('', text)
+
+def run_surge_list():
+    with console.status("[bold green]正在获取项目列表...", spinner="dots"):
+        try:
+            result = subprocess.run("surge list", shell=True, capture_output=True, text=True, encoding="utf-8")
+            if result.returncode != 0:
+                console.print(f"[bold red]✗ 获取列表失败: {result.stderr}[/bold red]")
+                return
+
+            # 预处理：移除 ANSI 代码并按行拆分
+            raw_lines = result.stdout.strip().splitlines()
+            if not raw_lines:
+                console.print("[yellow]未找到任何项目。[/yellow]")
+                return
+
+            table = Table(title="[bold cyan]Surge 项目列表[/bold cyan]", border_style="bright_blue", header_style="bold magenta")
+            table.add_column("域名 (Domain)", style="cyan")
+            table.add_column("发布时间 (Published)", style="green")
+            table.add_column("服务商 (Provider)", style="dim")
+            table.add_column("计划 (Plan)", style="yellow")
+
+            for line in raw_lines:
+                clean_line = strip_ansi(line).strip()
+                if not clean_line:
+                    continue
+                
+                # 按照 2 个或更多空格拆分
+                parts = re.split(r'\s{2,}', clean_line)
+                
+                if len(parts) >= 2:
+                    domain = parts[0]
+                    time = parts[1]
+                    provider = parts[2] if len(parts) > 2 else "-"
+                    plan = parts[-1] if len(parts) > 3 else "-"
+                    # 如果只有 2 个部分，plan 可能就是 parts[1] 的补充，这种情况通常不会发生
+                    
+                    table.add_row(domain, time, provider, plan)
+
+            console.print(table)
+        except Exception as e:
+            console.print(f"[bold red]错误: {e}[/bold red]")
+
 def show_menu():
     while True:
         console.clear()
@@ -65,7 +112,7 @@ def show_menu():
         choice = Prompt.ask("请选择操作", choices=["1", "2", "3", "4", "0"], default="1")
         
         if choice == "1":
-            run_command("surge list", "正在获取项目列表")
+            run_surge_list()
             Prompt.ask("\n按回车键继续")
         elif choice == "2":
             project = Prompt.ask("请输入要删除的项目域名 (例如 example.surge.sh)")
