@@ -120,7 +120,6 @@ def run_deploy(path, domain_url):
                 summary_table = Table(show_header=False, box=None, padding=(0, 1))
                 summary_table.add_row("📁 [bold]项目路径[/bold]", f"[dim]{stats.get('project', path)}[/dim]")
                 summary_table.add_row("📦 [bold]文件大小[/bold]", f"[yellow]{stats.get('size', '未知')}[/yellow]")
-                # summary_table.add_row("🔗 [bold]项目地址[/bold]", f"[bold link={domain_url} cyan]{domain_url}[/bold link={domain_url} cyan]")
                 summary_table.add_row("🔗 [bold]项目地址[/bold]", f"[bold cyan]{domain_url}[/bold cyan]")
                 
                 console.print(Panel(
@@ -138,6 +137,29 @@ def run_deploy(path, domain_url):
         except Exception as e:
             console.print(f"[bold red]错误: {e}[/bold red]")
             return False
+
+def run_teardown(project):
+    with console.status(f"[bold red]正在删除项目 {project}...", spinner="dots"):
+        try:
+            process = subprocess.Popen(f"surge teardown {project}", 
+                                     shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, 
+                                     text=True, encoding="utf-8")
+
+            for line in process.stdout:
+                clean_line = strip_ansi(line).strip()
+                if not clean_line:
+                    continue
+
+                # 只显示成功移除的提示
+                if "has been removed" in clean_line.lower() or "success" in clean_line.lower():
+                    console.print(f"\n[bold green]✓ {clean_line}[/bold green]")
+
+            process.wait()
+            if process.returncode != 0:
+                console.print(f"\n[bold red]✗ 删除失败 (退出码: {process.returncode})[/bold red]")
+
+        except Exception as e:
+            console.print(f"[bold red]错误: {e}[/bold red]")
 
 def show_menu():
     while True:
@@ -223,7 +245,7 @@ def show_menu():
             project = Prompt.ask("请输入要删除的项目域名 (例如 xxx.surge.sh)")
             if project:
                 if Confirm.ask(f"[bold red]确定要删除项目 [cyan]{project}[/cyan] 吗？[/bold red]", default=False):
-                    run_command(f"surge teardown {project}", f"正在删除项目 {project}")
+                    run_teardown(project)
                 else:
                     console.print("[yellow]已取消删除。[/yellow]")
             Prompt.ask("\n按回车键继续")
