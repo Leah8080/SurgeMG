@@ -5,7 +5,7 @@ from pathlib import Path
 from rich.console import Console, Group
 from rich.panel import Panel
 from rich.table import Table
-from rich.prompt import Prompt, IntPrompt
+from rich.prompt import Prompt, IntPrompt, Confirm
 from rich.status import Status
 from logic import generate_links
 
@@ -190,7 +190,10 @@ def show_menu():
         elif choice == "3":
             project = Prompt.ask("请输入要删除的项目域名 (例如 example.surge.sh)")
             if project:
-                run_command(f"surge teardown {project}", f"正在删除项目 {project}")
+                if Confirm.ask(f"[bold red]确定要删除项目 [cyan]{project}[/cyan] 吗？[/bold red]", default=False):
+                    run_command(f"surge teardown {project}", f"正在删除项目 {project}")
+                else:
+                    console.print("[yellow]已取消删除。[/yellow]")
             Prompt.ask("\n按回车键继续")
         elif choice == "4":
             path = Prompt.ask("请输入surge项目路径").strip().strip('"')
@@ -248,7 +251,10 @@ def show_tool_management():
             run_command("npm install -g surge", "正在更新 surge")
             Prompt.ask("\n按回车键继续")
         elif choice == "3":
-            run_command("npm uninstall -g surge", "正在卸载 surge")
+            if Confirm.ask("[bold red]确定要卸载 surge 吗？[/bold red]", default=False):
+                run_command("npm uninstall -g surge", "正在卸载 surge")
+            else:
+                console.print("[yellow]已取消卸载。[/yellow]")
             Prompt.ask("\n按回车键继续")
         elif choice == "0":
             break
