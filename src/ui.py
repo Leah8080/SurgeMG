@@ -43,24 +43,24 @@ def show_menu():
     while True:
         console.clear()
         
-        title_panel = Panel.fit(
-            "[bold cyan]surge部署交互工具[/bold cyan]",
-            border_style="bright_blue",
-            padding=(1, 2)
-        )
-        console.print(title_panel)
-
-        table = Table(show_header=False, box=None)
-        table.add_column("Index", style="green")
-        table.add_column("Option")
+        menu_table = Table(show_header=False, box=None, padding=(0, 1))
+        menu_table.add_column("Index", style="green")
+        menu_table.add_column("Option")
         
-        table.add_row("1.", "查看项目 (surge list)")
-        table.add_row("2.", "删除项目 (surge teardown)")
-        table.add_row("3.", "生成链接 (Markdown)")
-        table.add_row("4.", "工具管理 (Install/Update/Uninstall)")
-        table.add_row("0.", "退出脚本")
+        menu_table.add_row("1.", "查看项目 (surge list)")
+        menu_table.add_row("2.", "删除项目 (surge teardown)")
+        menu_table.add_row("3.", "生成链接 (Markdown)")
+        menu_table.add_row("4.", "工具管理 (Install/Update/Uninstall)")
+        menu_table.add_row("0.", "退出脚本")
 
-        console.print(table)
+        menu_panel = Panel(
+            menu_table,
+            title="[bold cyan]🚀 surge部署交互工具[/bold cyan]",
+            border_style="bright_blue",
+            padding=(1, 2),
+            expand=False
+        )
+        console.print(menu_panel)
         
         choice = Prompt.ask("请选择操作", choices=["1", "2", "3", "4", "0"], default="1")
         
@@ -68,7 +68,7 @@ def show_menu():
             run_command("surge list", "正在获取项目列表")
             Prompt.ask("\n按回车键继续")
         elif choice == "2":
-            project = Prompt.ask("请输入要删除的项目域名 (例如 test.surge.sh)")
+            project = Prompt.ask("请输入要删除的项目域名 (例如 example.surge.sh)")
             if project:
                 run_command(f"surge teardown {project}", f"正在删除项目 {project}")
             Prompt.ask("\n按回车键继续")
@@ -96,22 +96,25 @@ def show_tool_management():
     while True:
         version = get_surge_version()
         console.clear()
-        console.print(Panel.fit(
-            f"[bold cyan]工具管理[/bold cyan]\n[dim]当前版本: {version}[/dim]", 
+        
+        tool_table = Table(show_header=False, box=None, padding=(0, 1))
+        tool_table.add_column("Index", style="green")
+        tool_table.add_column("Option")
+        
+        tool_table.add_row("1.", "安装 surge (npm install -g surge)")
+        tool_table.add_row("2.", "更新 surge (npm install -g surge)")
+        tool_table.add_row("3.", "卸载 surge (npm uninstall -g surge)")
+        tool_table.add_row("0.", "返回主菜单")
+
+        tool_panel = Panel(
+            tool_table,
+            title="[bold cyan]🛠️ 工具管理[/bold cyan]",
+            subtitle=f"[dim]当前版本: {version}[/dim]",
             border_style="bright_blue",
-            padding=(1, 2)
-        ))
-        
-        table = Table(show_header=False, box=None)
-        table.add_column("Index", style="green")
-        table.add_column("Option")
-        
-        table.add_row("1.", "安装 surge (npm install -g surge)")
-        table.add_row("2.", "更新 surge (npm install -g surge)")
-        table.add_row("3.", "卸载 surge (npm uninstall -g surge)")
-        table.add_row("0.", "返回主菜单")
-        
-        console.print(table)
+            padding=(1, 2),
+            expand=False
+        )
+        console.print(tool_panel)
         
         choice = Prompt.ask("请选择操作", choices=["1", "2", "3", "0"], default="1")
         
