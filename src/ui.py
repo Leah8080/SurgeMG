@@ -1,7 +1,7 @@
 import subprocess
 import sys
 from pathlib import Path
-from rich.console import Console
+from rich.console import Console, Group
 from rich.panel import Panel
 from rich.table import Table
 from rich.prompt import Prompt, IntPrompt
@@ -98,8 +98,12 @@ def show_tool_management():
         console.clear()
         
         tool_table = Table(show_header=False, box=None, padding=(0, 1))
-        tool_table.add_column("Index", style="green")
+        tool_table.add_column("Index", style="green", width=3)
         tool_table.add_column("Option")
+        
+        # Add version info as a row in the main table
+        tool_table.add_row("", f"[dim]当前版本: {version}[/dim]")
+        tool_table.add_row("", "") # Spacer
         
         tool_table.add_row("1.", "安装 surge (npm install -g surge)")
         tool_table.add_row("2.", "更新 surge (npm install -g surge)")
@@ -109,9 +113,8 @@ def show_tool_management():
         tool_panel = Panel(
             tool_table,
             title="[bold cyan]🛠️ 工具管理[/bold cyan]",
-            subtitle=f"[dim]当前版本: {version}[/dim]",
             border_style="bright_blue",
-            padding=(1, 2),
+            padding=(1, 1),
             expand=False
         )
         console.print(tool_panel)
