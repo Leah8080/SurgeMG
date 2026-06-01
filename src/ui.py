@@ -117,17 +117,17 @@ def run_deploy(path, domain_url):
             
             if process.returncode == 0:
                 # 部署成功后显示一个极其精美的总结面板
-                summary_table = Table(show_header=False, box=None, padding=(0, 2))
+                summary_table = Table(show_header=False, box=None, padding=(0, 1))
                 summary_table.add_row("📁 [bold]项目路径[/bold]", f"[dim]{stats.get('project', path)}[/dim]")
                 summary_table.add_row("📦 [bold]文件大小[/bold]", f"[yellow]{stats.get('size', '未知')}[/yellow]")
-                summary_table.add_row("🔗 [bold]项目地址[/bold]", f"[bold underline link={domain_url} cyan]{domain_url}[/bold underline link={domain_url} cyan]")
+                summary_table.add_row("🔗 [bold]项目地址[/bold]", f"[bold link={domain_url} cyan]{domain_url}[/bold link={domain_url} cyan]")
                 
                 console.print(Panel(
                     summary_table, 
                     title="[bold green]🎊 部署成功[/bold green]", 
                     border_style="green", 
                     expand=False,
-                    padding=(1, 2)
+                    padding=(1, 1)
                 ))
             else:
                 console.print(f"\n[bold red]✗ 部署失败 (退出码: {process.returncode})[/bold red]")
@@ -177,7 +177,7 @@ def show_menu():
                         raw_cname = cname_file.read_text(encoding="utf-8").strip().lstrip("\ufeff")
                         if raw_cname:
                             domain = raw_cname if "://" in raw_cname else f"https://{raw_cname}"
-                            console.print(f"[bold green]检测到 CNAME 文件: [cyan]{raw_cname}[/cyan][/bold green]")
+                            console.print(f"[bold green]检测到 CNAME 文件: [cyan]{raw_cname}[/cyan][/bold green]", highlight=False)
                     
                     if not domain:
                         prefix = Prompt.ask("请输入要使用的域名前缀 (例如: test)")
@@ -186,7 +186,7 @@ def show_menu():
                     
                     if domain:
                         # 部署前进行二次确认
-                        confirm_table = Table(show_header=False, box=None, padding=(0, 2))
+                        confirm_table = Table(show_header=False, box=None, padding=(0, 1))
                         confirm_table.add_row("项目路径:", f"[cyan]{project_path}[/cyan]")
                         confirm_table.add_row("部署域名:", f"[bold green]{domain}[/bold green]")
                         
