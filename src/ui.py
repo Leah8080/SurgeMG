@@ -13,7 +13,8 @@ SCRIPT_DIR = Path(__file__).parent.parent.parent
 
 def get_surge_version():
     try:
-        result = subprocess.run(["surge", "--version"], capture_output=True, text=True, check=True)
+        # On Windows, npm global commands are often .cmd files, requiring shell=True
+        result = subprocess.run("surge --version", shell=True, capture_output=True, text=True, check=True)
         return result.stdout.strip()
     except Exception:
         return "未安装"
@@ -21,27 +22,29 @@ def get_surge_version():
 def run_command(command, description):
     with console.status(f"[bold green]{description}...", spinner="dots"):
         try:
-            # shell=True is needed for npm commands on Windows often, 
-            # but let's try direct list first. 
-            # npm install -g surge might need shell=True on Windows.
-            process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding="utf-8")
+            # Clear status before printing command output to avoid mixing
+            console.print(f"\n[bold blue]>>> {description}[/bold blue]")
             for line in process.stdout:
-                console.print(f"  [dim]{line.strip()}[/dim]")
+                # Use highlight=False to prevent rich from adding its own coloring to already colored/messy strings
+                # and strip trailing whitespace
+                clean_line = line.rstrip()
+                if clean_line:
+                    console.print(clean_line, highlight=False)
             process.wait()
             if process.returncode == 0:
-                console.print(f"[bold green]✓ {description} 成功[/bold green]")
+                console.print(f"\n[bold green]✓ {description} 成功[/bold green]")
             else:
-                console.print(f"[bold red]✗ {description} 失败 (退出码: {process.returncode})[/bold red]")
+                console.print(f"\n[bold red]✗ {description} 失败 (退出码: {process.returncode})[/bold red]")
         except Exception as e:
             console.print(f"[bold red]错误: {e}[/bold red]")
 
 def show_menu():
     while True:
-        version = get_surge_version()
         console.clear()
         
         title_panel = Panel.fit(
-            f"[bold cyan]surge部署交互工具[/bold cyan]\n[dim]版本: {version}[/dim]",
+            "[bold cyan]surge部署交互工具[/bold cyan]",
             border_style="bright_blue",
             padding=(1, 2)
         )
@@ -55,7 +58,7 @@ def show_menu():
         table.add_row("2.", "删除项目 (surge teardown)")
         table.add_row("3.", "生成链接 (Markdown)")
         table.add_row("4.", "工具管理 (Install/Update/Uninstall)")
-        table.add_row("0.", "退出")
+        table.add_row("0.", "退出脚本")
 
         console.print(table)
         
@@ -65,7 +68,7 @@ def show_menu():
             run_command("surge list", "正在获取项目列表")
             Prompt.ask("\n按回车键继续")
         elif choice == "2":
-            project = Prompt.ask("请输入要删除的项目域名 (例如 example.surge.sh)")
+            project = Prompt.ask("请输入要删除的项目域名 (例如 test.surge.sh)")
             if project:
                 run_command(f"surge teardown {project}", f"正在删除项目 {project}")
             Prompt.ask("\n按回车键继续")
@@ -91,8 +94,13 @@ def show_menu():
 
 def show_tool_management():
     while True:
+        version = get_surge_version()
         console.clear()
-        console.print(Panel.fit("[bold cyan]工具管理[/bold cyan]", border_style="bright_blue"))
+        console.print(Panel.fit(
+            f"[bold cyan]工具管理[/bold cyan]\n[dim]当前版本: {version}[/dim]", 
+            border_style="bright_blue",
+            padding=(1, 2)
+        ))
         
         table = Table(show_header=False, box=None)
         table.add_column("Index", style="green")
