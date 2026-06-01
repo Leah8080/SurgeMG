@@ -8,7 +8,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.prompt import Prompt, IntPrompt, Confirm
 from rich.status import Status
-from logic import generate_links
+from logic import generate_links, write_deploy_log
 
 console = Console()
 SCRIPT_DIR = Path(__file__).parent.parent.parent
@@ -130,6 +130,10 @@ def run_deploy(path, domain_url):
                     expand=False,
                     padding=(1, 1)
                 ))
+                
+                # 写入部署日志
+                write_deploy_log(stats.get('project', path), domain_url)
+                
                 return True
             else:
                 console.print(f"\n[bold red]✗ 部署失败 (退出码: {process.returncode})[/bold red]")

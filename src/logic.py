@@ -158,6 +158,16 @@ def write_links_file(base_path: Path, content: str) -> Path:
     out_file.write_text(content, encoding="utf-8")
     return out_file
 
+def write_deploy_log(project_path: str, domain: str):
+    """记录部署成功后的项目路径和使用的域名"""
+    from datetime import datetime
+    log_file = Path.cwd() / "deploy.log"
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    log_entry = f"[{timestamp}] Project: {project_path} | Domain: {domain}\n"
+    
+    with open(log_file, "a", encoding="utf-8") as f:
+        f.write(log_entry)
+
 def generate_links(project_path: str, script_dir: Path):
     base_path = Path(project_path).expanduser().resolve()
     if not base_path.exists() or not base_path.is_dir():

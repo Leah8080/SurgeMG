@@ -29,6 +29,7 @@ log
 x/
 *.bat
 *.txt
+*.log
 note.md
 
 links/
