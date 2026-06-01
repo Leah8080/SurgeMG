@@ -16,7 +16,9 @@ def get_surge_version():
     try:
         # On Windows, npm global commands are often .cmd files, requiring shell=True
         result = subprocess.run("surge --version", shell=True, capture_output=True, text=True, check=True)
-        return result.stdout.strip()
+        # 提取版本号（匹配 v0.27.4 或 0.27.4 格式）
+        match = re.search(r'v?(\d+\.\d+\.\d+)', result.stdout)
+        return match.group(1) if match else "未安装"
     except Exception:
         return "未安装"
 
@@ -118,7 +120,7 @@ def run_deploy(path, domain_url):
                 summary_table = Table(show_header=False, box=None, padding=(0, 2))
                 summary_table.add_row("📁 [bold]项目路径[/bold]", f"[dim]{stats.get('project', path)}[/dim]")
                 summary_table.add_row("📦 [bold]文件大小[/bold]", f"[yellow]{stats.get('size', '未知')}[/yellow]")
-                summary_table.add_row("🔗 [bold]预览地址[/bold]", f"[bold underline link={domain_url} cyan]{domain_url}[/bold underline link={domain_url} cyan]")
+                summary_table.add_row("🔗 [bold]项目地址[/bold]", f"[bold underline link={domain_url} cyan]{domain_url}[/bold underline link={domain_url} cyan]")
                 
                 console.print(Panel(
                     summary_table, 
@@ -144,15 +146,15 @@ def show_menu():
         menu_table.add_row("1.", "查看项目 (surge list)")
         menu_table.add_row("2.", "部署项目 (surge deploy)")
         menu_table.add_row("3.", "删除项目 (surge teardown)")
-        menu_table.add_row("4.", "生成链接 (Markdown)")
-        menu_table.add_row("5.", "工具管理 (Install/Update/Uninstall)")
+        menu_table.add_row("4.", "文件链接 (markdown)")
+        menu_table.add_row("5.", "工具管理 (npm global)")
         menu_table.add_row("0.", "退出脚本")
 
         menu_panel = Panel(
             menu_table,
-            title="[bold cyan]🚀 surge部署交互工具[/bold cyan]",
+            title="[bold cyan]🚀 surge项目交互工具[/bold cyan]",
             border_style="bright_blue",
-            padding=(1, 2),
+            padding=(1, 1),
             expand=False
         )
         console.print(menu_panel)
@@ -178,7 +180,7 @@ def show_menu():
                             console.print(f"[bold green]检测到 CNAME 文件: [cyan]{raw_cname}[/cyan][/bold green]")
                     
                     if not domain:
-                        prefix = Prompt.ask("未检测到 CNAME，请输入要使用的域名前缀 (例如: test)")
+                        prefix = Prompt.ask("请输入要使用的域名前缀 (例如: test)")
                         if prefix:
                             domain = f"https://{prefix}.surge.sh"
                     
@@ -188,7 +190,7 @@ def show_menu():
                     console.print(f"[bold red]错误: 路径不存在或不是目录: {path_str}[/bold red]")
             Prompt.ask("\n按回车键继续")
         elif choice == "3":
-            project = Prompt.ask("请输入要删除的项目域名 (例如 example.surge.sh)")
+            project = Prompt.ask("请输入要删除的项目域名 (例如 xxx.surge.sh)")
             if project:
                 if Confirm.ask(f"[bold red]确定要删除项目 [cyan]{project}[/cyan] 吗？[/bold red]", default=False):
                     run_command(f"surge teardown {project}", f"正在删除项目 {project}")
@@ -221,13 +223,9 @@ def show_tool_management():
         console.clear()
         
         tool_table = Table(show_header=False, box=None, padding=(0, 1))
-        tool_table.add_column("Index", style="green", width=3)
+        tool_table.add_column("Index", style="green")
         tool_table.add_column("Option")
-        
-        # Add version info as a row in the main table
-        tool_table.add_row("", f"[dim]当前版本: {version}[/dim]")
-        tool_table.add_row("", "") # Spacer
-        
+                
         tool_table.add_row("1.", "安装 surge (npm install -g surge)")
         tool_table.add_row("2.", "更新 surge (npm install -g surge)")
         tool_table.add_row("3.", "卸载 surge (npm uninstall -g surge)")
@@ -235,7 +233,7 @@ def show_tool_management():
 
         tool_panel = Panel(
             tool_table,
-            title="[bold cyan]🛠️ 工具管理[/bold cyan]",
+            title=f"[bold cyan]🛠️ 工具管理[/bold cyan](surge:{version})",
             border_style="bright_blue",
             padding=(1, 1),
             expand=False
