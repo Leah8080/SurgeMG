@@ -210,7 +210,7 @@ def show_menu():
                                     try:
                                         # 写入完整的域名地址（包括协议头）
                                         cname_file.write_text(domain, encoding="utf-8")
-                                        console.print(f"[bold green]已自动创建 CNAME 文件: [cyan]{domain}[/cyan][/bold green]")
+                                        console.print(f"[bold green]已自动创建 CNAME 文件: [cyan]{domain}[/cyan][/bold green]", highlight=False)
                                     except Exception as e:
                                         console.print(f"[bold red]创建 CNAME 失败: {e}[/bold red]")
                         else:
