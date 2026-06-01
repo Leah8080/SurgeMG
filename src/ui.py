@@ -152,11 +152,12 @@ def run_teardown(project):
 
                 # 只显示成功移除的提示
                 if "has been removed" in clean_line.lower() or "success" in clean_line.lower():
-                    console.print(f"\n[bold green]✓ {clean_line}[/bold green]")
+                    # console.print(f"\n[bold green]✓ 删除成功{clean_line}[/bold green]")
+                    console.print(f"\n[bold green]✓ 成功删除：{project}[/bold green]")
 
             process.wait()
             if process.returncode != 0:
-                console.print(f"\n[bold red]✗ 删除失败 (退出码: {process.returncode})[/bold red]")
+                console.print(f"\n[bold red]✗ 删除失败：{project} (退出码: {process.returncode})[/bold red]")
 
         except Exception as e:
             console.print(f"[bold red]错误: {e}[/bold red]")
@@ -172,7 +173,7 @@ def show_menu():
         menu_table.add_row("1.", "查看项目 (surge list)")
         menu_table.add_row("2.", "部署项目 (surge deploy)")
         menu_table.add_row("3.", "删除项目 (surge teardown)")
-        menu_table.add_row("4.", "文件链接 (markdown)")
+        menu_table.add_row("4.", "生成链接 (markdown)")
         menu_table.add_row("5.", "工具管理 (npm global)")
         menu_table.add_row("0.", "退出脚本")
 
@@ -185,7 +186,7 @@ def show_menu():
         )
         console.print(menu_panel)
         
-        choice = Prompt.ask("请选择操作", choices=["1", "2", "3", "4", "5", "0"], default="1")
+        choice = Prompt.ask("请选择操作", choices=["1", "2", "3", "4", "5", "0"], default="0")
         
         if choice == "1":
             run_surge_list()
@@ -242,7 +243,7 @@ def show_menu():
                     console.print(f"[bold red]错误: 路径不存在或不是目录: {path_str}[/bold red]")
             Prompt.ask("\n按回车键继续")
         elif choice == "3":
-            project = Prompt.ask("请输入要删除的项目域名 (例如 xxx.surge.sh)")
+            project = Prompt.ask("请输入要删除的项目域名")
             if project:
                 if Confirm.ask(f"[bold red]确定要删除项目 [cyan]{project}[/cyan] 吗？[/bold red]", default=False):
                     run_teardown(project)
@@ -257,9 +258,9 @@ def show_menu():
                         result = generate_links(path, SCRIPT_DIR)
                     
                     console.print(f"\n[bold green]✓ 生成成功![/bold green]")
-                    console.print(f"项目域名: [cyan]{result['domain']}[/cyan]")
+                    console.print(f"项目域名: [cyan]{result['domain']}[/cyan]", highlight=False)
                     console.print(f"总文件数: {result['total_count']} | 生成链接: {result['files_count']} | 过滤数量: {result['filtered_count']}")
-                    console.print(f"输出文件: [link=file://{result['out_file']}]{result['out_file']}[/link]")
+                    console.print(f"输出文件: [cyan]{result['out_file']}[/cyan]")
                 except Exception as e:
                     console.print(f"[bold red]错误: {e}[/bold red]")
             Prompt.ask("\n按回车键继续")
@@ -292,7 +293,7 @@ def show_tool_management():
         )
         console.print(tool_panel)
         
-        choice = Prompt.ask("请选择操作", choices=["1", "2", "3", "0"], default="1")
+        choice = Prompt.ask("请选择操作", choices=["1", "2", "3", "0"], default="0")
         
         if choice == "1":
             run_command("npm install -g surge", "正在安装 surge")
