@@ -258,7 +258,7 @@ def show_menu():
                         result = generate_links(path_str, SCRIPT_DIR)
                     
                     # 生成成功后显示精美的总结面板
-                    summary_table = Table(show_header=False, box=None, padding=(0, 2))
+                    summary_table = Table(show_header=False, box=None, padding=(0, 1))
                     summary_table.add_row("🌐 [bold]项目域名[/bold]", f"[bold cyan]{result['domain']}[/bold cyan]")
                     summary_table.add_row("📊 [bold]文件统计[/bold]", f"总数: [green]{result['total_count']}[/green] | 链接: [cyan]{result['files_count']}[/cyan] | 过滤: [yellow]{result['filtered_count']}[/yellow]")
                     summary_table.add_row("📝 [bold]输出文件[/bold]", f"[dim]{result['out_file']}[/dim]")
