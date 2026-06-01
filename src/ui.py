@@ -185,7 +185,24 @@ def show_menu():
                             domain = f"https://{prefix}.surge.sh"
                     
                     if domain:
-                        run_deploy(str(project_path), domain)
+                        # 部署前进行二次确认
+                        confirm_table = Table(show_header=False, box=None, padding=(0, 2))
+                        confirm_table.add_row("项目路径:", f"[cyan]{project_path}[/cyan]")
+                        confirm_table.add_row("部署域名:", f"[bold green]{domain}[/bold green]")
+                        
+                        console.print("\n")
+                        console.print(Panel(
+                            confirm_table,
+                            title="[bold yellow]确认部署信息[/bold yellow]",
+                            border_style="yellow",
+                            expand=False,
+                            padding=(1, 1)
+                        ))
+                        
+                        if Confirm.ask("\n确定要开始部署吗？", default=True):
+                            run_deploy(str(project_path), domain)
+                        else:
+                            console.print("[yellow]已取消部署。[/yellow]")
                 else:
                     console.print(f"[bold red]错误: 路径不存在或不是目录: {path_str}[/bold red]")
             Prompt.ask("\n按回车键继续")
