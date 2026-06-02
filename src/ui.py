@@ -27,19 +27,36 @@ def run_command(command, description):
     with console.status(f"[bold green]{description}...", spinner="dots"):
         try:
             process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding="utf-8")
-            # Clear status before printing command output to avoid mixing
-            console.print(f"\n[bold blue]>>> {description}[/bold blue]")
+            
+            output_lines = []
             for line in process.stdout:
-                # Use highlight=False to prevent rich from adding its own coloring to already colored/messy strings
-                # and strip trailing whitespace
                 clean_line = line.rstrip()
                 if clean_line:
-                    console.print(clean_line, highlight=False)
+                    output_lines.append(clean_line)
+            
             process.wait()
+            
+            # 显示执行结果面板
+            result_title = description.replace("正在", "")
             if process.returncode == 0:
-                console.print(f"\n[bold green]✓ {description} 成功[/bold green]")
+                content = "\n".join(output_lines) if output_lines else "执行成功，无输出信息。"
+                console.print(Panel(
+                    content,
+                    title=f"[bold green]✓ {result_title} 成功[/bold green]",
+                    border_style="green",
+                    expand=False,
+                    padding=(1, 1)
+                ))
             else:
-                console.print(f"\n[bold red]✗ {description} 失败 (退出码: {process.returncode})[/bold red]")
+                content = "\n".join(output_lines) if output_lines else "执行失败，无输出信息。"
+                console.print(Panel(
+                    content,
+                    title=f"[bold red]✗ {result_title} 失败[/bold red]",
+                    subtitle=f"[bold red]退出码: {process.returncode}[/bold red]",
+                    border_style="red",
+                    expand=False,
+                    padding=(1, 1)
+                ))
         except Exception as e:
             console.print(f"[bold red]错误: {e}[/bold red]")
 
