@@ -151,11 +151,26 @@ def build_markdown(base_path: Path, domain: str, files: list[Path], icons_config
     return "\n".join(lines)
 
 def write_links_file(base_path: Path, content: str) -> Path:
-    out_dir = Path.cwd() / "links"
-    out_dir.mkdir(parents=True, exist_ok=True)
-
-    out_file = out_dir / f"{base_path.name}.md"
+    out_file = base_path / "link.md"
     out_file.write_text(content, encoding="utf-8")
+
+    # 自动把 link.md 追加到项目路径下的忽略文件中
+    ignore_file = base_path / ".surgeignore"
+    ignore_line = "link.md"
+
+    lines = []
+    if ignore_file.exists():
+        content_ignore = ignore_file.read_text(encoding="utf-8")
+        lines = content_ignore.splitlines()
+
+        if ignore_line not in [line.strip() for line in lines]:
+            with open(ignore_file, "a", encoding="utf-8") as f:
+                if content_ignore and not content_ignore.endswith("\n"):
+                    f.write("\n")
+                f.write(f"{ignore_line}\n")
+    else:
+        ignore_file.write_text(f"{ignore_line}\n", encoding="utf-8")
+
     return out_file
 
 def write_deploy_log(project_path: str, domain: str):
